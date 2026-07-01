@@ -28,7 +28,7 @@ def list_expenses():
             query = query.eq('account', account)
 
         # Get total count
-        count_result = query.select('id', count='exact').execute()
+        count_result = query.count('exact').execute()
         total = count_result.count
 
         # Get paginated results
