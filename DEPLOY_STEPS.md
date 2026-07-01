@@ -28,7 +28,7 @@ Environment: Python
 Region: Oregon (or closest)
 Root Directory: (leave empty)
 Build Command: pip install -r backend/requirements.txt
-Start Command: python backend/app.py
+Start Command: python -m backend.app
 ```
 
 ### 1d. Add Environment Variables

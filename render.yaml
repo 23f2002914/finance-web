@@ -4,8 +4,10 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: python backend/app.py
+    startCommand: python -m backend.app
     envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
       - key: SUPABASE_URL
         value: ${SUPABASE_URL}
       - key: SUPABASE_ANON_KEY
