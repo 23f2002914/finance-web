@@ -27,12 +27,9 @@ def list_expenses():
         if account:
             query = query.eq('account', account)
 
-        # Get total count
-        count_result = query.count('exact').execute()
-        total = count_result.count
-
-        # Get paginated results
-        expenses = query.order('date', desc=True).range(offset, offset + limit - 1).execute()
+        # Get paginated results with count
+        expenses = query.order('date', desc=True).range(offset, offset + limit - 1).execute(count='exact')
+        total = expenses.count if hasattr(expenses, 'count') else len(expenses.data)
 
         # Attach splits for split expenses
         for exp in expenses.data:
