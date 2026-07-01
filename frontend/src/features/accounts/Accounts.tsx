@@ -1,84 +1,60 @@
-import { useState } from 'react'
-import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount, Account } from './hooks'
-import { AccountsTable } from './AccountsTable'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { inr } from '../../lib/formatters'
+import { LoadingState } from '../components/LoadingState'
 
 export function AccountsTab() {
-  const { data: accounts = [], isLoading } = useAccounts()
-  const createAcc = useCreateAccount()
-  const updateAcc = useUpdateAccount()
-  const deleteAcc = useDeleteAccount()
-  const [showForm, setShowForm] = useState(false)
-  const [editing, setEditing] = useState<Account | null>(null)
-  const [formData, setFormData] = useState({ name: '', account_type: 'Bank', notes: '' })
+  const { data: accounts = [], isLoading, error } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => api('/accounts'),
+    staleTime: 1000 * 60 * 5,
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (editing) {
-      await updateAcc.mutateAsync({ id: editing.id, ...formData })
-      setEditing(null)
-    } else {
-      await createAcc.mutateAsync(formData)
-    }
-    setFormData({ name: '', account_type: 'Bank', notes: '' })
-    setShowForm(false)
-  }
+  if (isLoading) return <LoadingState />
+  if (error) return <div className="alert alert-error">Failed to load accounts</div>
 
-  const handleEdit = (acc: Account) => {
-    setEditing(acc)
-    setFormData({ name: acc.name, account_type: acc.account_type, notes: acc.notes })
-    setShowForm(true)
-  }
+  const total = accounts.reduce((sum: number, a: any) => sum + a.closing_balance, 0)
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="section-header">Accounts</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); setFormData({ name: '', account_type: 'Bank', notes: '' }); }} className="btn-primary">
-          + New Account
-        </button>
+    <div className="space-y-8 fade-in">
+      <div>
+        <h1 className="section-header">🏦 Bank Accounts</h1>
+        <p className="body-sm">Manage your accounts</p>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="card mb-6">
-          <h2 className="font-semibold mb-4">{editing ? 'Edit Account' : 'New Account'}</h2>
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Account name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded"
-              required
-            />
-            <select
-              value={formData.account_type}
-              onChange={(e) => setFormData({ ...formData, account_type: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded"
-            >
-              <option>Bank</option>
-              <option>Wallet</option>
-              <option>Cash</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded"
-            />
-            <div className="flex gap-2">
-              <button type="submit" className="btn-primary">Save</button>
-              <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
-            </div>
-          </div>
-        </form>
-      )}
+      <div className="stat-card">
+        <div className="stat-label">Total Balance</div>
+        <div className="stat-value text-cyan-300">{inr(total)}</div>
+        <div className="stat-subtext">{accounts.length} accounts</div>
+      </div>
 
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <AccountsTable accounts={accounts} onEdit={handleEdit} onDelete={(id) => deleteAcc.mutateAsync(id)} />
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {accounts.map((account: any) => {
+          const icon = account.account_type === 'Bank' ? '🏦' : account.account_type === 'Wallet' ? '👝' : '💵'
+          return (
+            <div key={account.id} className="surface-lg p-6 hover:scale-105 transform transition-transform">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{icon}</span>
+                    <div>
+                      <h3 className="h4 text-slate-50">{account.name}</h3>
+                      <p className="caption">{account.account_type}</p>
+                    </div>
+                  </div>
+                </div>
+                <span className={`badge ${account.active ? 'badge-success' : 'badge-neutral'}`}>
+                  {account.active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div className="border-t border-slate-700/50 pt-4">
+                <p className="label mb-2">Closing Balance</p>
+                <p className="text-2xl font-bold text-cyan-300">{inr(account.closing_balance)}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
