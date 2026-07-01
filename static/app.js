@@ -159,7 +159,8 @@ function acctBadge(name) {
     _accColorMap[name] = ACC_COLORS[keys.length % ACC_COLORS.length];
   }
   const c = _accColorMap[name];
-  return `<span class="badge" style="background:${c}22;color:${c}">${name}</span>`;
+  const escaped = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return `<span class="badge" style="background:${c}22;color:${c}">${escaped}</span>`;
 }
 const PM_COLORS = {'UPI':'#1ABC9C','Card - Debit':'#3498DB','Card - Credit':'#9B59B6','Cash':'#E67E22','Net Banking':'#2980B9','Cheque':'#7F8C8D','IMPS':'#16A085','NEFT':'#2ECC71','Other':'#95A5A6'};
 function pmBadge(pm) {
@@ -467,14 +468,15 @@ async function renderDebts() {
       const e = r.entries.find(e=>e.creditor_id===c.id);
       return `<td class="inr">${inr(e?.amount||0)}</td>`;
     }).join('');
-    return `<tr onclick="openDebtRow('${r.month}')">
+    const escapedMonth = String(r.month).replace(/'/g, "\\'");
+    return `<tr onclick="openDebtRow('${escapedMonth}')">
       <td><strong>${r.month}</strong></td>
       ${entryCells}
       <td class="inr">${inr(r.subscriptions)}</td>
       <td class="inr" style="font-weight:700;color:var(--debt-h)">${inr(r.total)}</td>
       <td onclick="event.stopPropagation()">
         <div class="actions">
-          <button class="btn-icon" onclick="openDebtRow('${r.month}')">✏</button>
+          <button class="btn-icon" onclick="openDebtRow('${escapedMonth}')">✏</button>
           <button class="btn-icon btn-del" onclick="delDebt('${r.month}')">🗑</button>
         </div>
       </td>
@@ -741,7 +743,8 @@ function renderExpPage() {
   slice.forEach(r => _rowCache.expenses.set(r.id, r));
   document.getElementById('exp-tbody').innerHTML = slice.map(r => {
     const splitBadge = r.is_split ? `<span class="badge" style="background:#E8F0FE;color:#1A73E8;margin-left:4px;font-size:10px">Split</span>` : '';
-    const splitDetail = r.is_split && r.splits ? r.splits.map(s=>`${s.category}: ${inr(s.amount)}`).join(' · ') : '';
+    const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const splitDetail = r.is_split && r.splits ? r.splits.map(s=>`${esc(s.category)}: ${inr(s.amount)}`).join(' · ') : '';
     return `<tr onclick="openRow('expenses',${r.id})">
       <td>${r.date}</td>
       <td>${r.description||'—'}</td>

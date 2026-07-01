@@ -388,8 +388,11 @@ def list_accounts():
 def add_account():
     d = request.json; conn = get_db()
     try:
+        name = d['name'].strip()
+        if not name:
+            conn.close(); return jsonify({'error':'Account name cannot be empty'}),400
         cur = conn.execute('INSERT INTO bank_accounts(name,account_type,notes,sort_order) VALUES(?,?,?,?)',
-                           (d['name'].strip(),d.get('account_type','Bank'),d.get('notes',''),d.get('sort_order',99)))
+                           (name,d.get('account_type','Bank'),d.get('notes',''),d.get('sort_order',99)))
         log_change(conn,'bank_accounts',cur.lastrowid,'create',{'name':d['name']})
         conn.commit()
     except sqlite3.IntegrityError:
@@ -436,8 +439,10 @@ def get_account_openings():
             r = dict(r)
             inc = conn.execute('SELECT COALESCE(SUM(amount),0) FROM income_entries WHERE month=? AND account=? AND COALESCE(deleted,0)=0',(m,r['account'])).fetchone()[0]
             exp = conn.execute('SELECT COALESCE(SUM(amount),0) FROM expenses WHERE month=? AND account=? AND COALESCE(deleted,0)=0',(m,r['account'])).fetchone()[0]
+            trf_in = conn.execute('SELECT COALESCE(SUM(amount),0) FROM transfers WHERE month=? AND to_account=? AND COALESCE(deleted,0)=0',(m,r['account'])).fetchone()[0]
+            trf_out = conn.execute('SELECT COALESCE(SUM(amount),0) FROM transfers WHERE month=? AND from_account=? AND COALESCE(deleted,0)=0',(m,r['account'])).fetchone()[0]
             r['income']  = round(inc,2); r['expenses'] = round(exp,2)
-            r['closing'] = round(r['opening_balance']+inc-exp,2)
+            r['closing'] = round(r['opening_balance']+inc-exp+trf_in-trf_out,2)
             entries.append(r)
         result.append({'month':m,'accounts':entries})
     conn.close(); return jsonify(result)
@@ -635,7 +640,10 @@ def restore_income_entry(id):
 @app.route('/api/income-entries/<int:id>/copy-next-month', methods=['POST'])
 def copy_income_next_month(id):
     conn = get_db()
-    row = dict(conn.execute('SELECT * FROM income_entries WHERE id=?',(id,)).fetchone())
+    result = conn.execute('SELECT * FROM income_entries WHERE id=?',(id,)).fetchone()
+    if not result:
+        conn.close(); return jsonify({'error':'Income entry not found'}),404
+    row = dict(result)
     try:
         dt = datetime.strptime(row['date'],'%Y-%m-%d')
         nd = dt.replace(year=dt.year+1,month=1) if dt.month==12 else dt.replace(month=dt.month+1)
@@ -740,7 +748,10 @@ def restore_expense(id):
 @app.route('/api/expenses/<int:id>/copy-next-month', methods=['POST'])
 def copy_expense_next_month(id):
     conn = get_db()
-    row    = dict(conn.execute('SELECT * FROM expenses WHERE id=?',(id,)).fetchone())
+    result = conn.execute('SELECT * FROM expenses WHERE id=?',(id,)).fetchone()
+    if not result:
+        conn.close(); return jsonify({'error':'Expense not found'}),404
+    row    = dict(result)
     splits = [dict(s) for s in conn.execute('SELECT * FROM expense_splits WHERE expense_id=?',(id,)).fetchall()]
     try:
         dt = datetime.strptime(row['date'],'%Y-%m-%d')
