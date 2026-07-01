@@ -2,9 +2,10 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install && npm install -C frontend",
+  "regions": ["iad1"],
   "env": {
-    "VITE_SUPABASE_URL": "@supabase_url",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "@supabase_key",
-    "VITE_API_URL": "@api_url"
+    "VITE_SUPABASE_URL": "https://biimibmtcofxsbtcauaq.supabase.co",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpaW1pYm10Y29meHNidGNhdWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODIzNjksImV4cCI6MjA5ODQ1ODM2OX0.AAzICg0YoaEgyCQ3min_1T6HNN2bstJrPJuU0IqDLaY",
+    "VITE_API_URL": "https://finance-web-5111.onrender.com/api"
   }
 }
