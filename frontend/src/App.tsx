@@ -4,7 +4,7 @@ import { TopNav } from './components/layout/TopNav'
 import { BottomNav } from './components/layout/BottomNav'
 import './styles/globals.css'
 
-// Import feature components (will create these)
+// Import feature components
 import { DashboardTab } from './features/dashboard/Dashboard'
 import { AccountsTab } from './features/accounts/Accounts'
 import { ExpensesTab } from './features/expenses/Expenses'
@@ -44,11 +44,13 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-50">
         <TopNav tab={tab} onTabChange={setTab} />
         
         <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
-          {renderTab()}
+          <div className="animate-fade-in">
+            {renderTab()}
+          </div>
         </main>
 
         <BottomNav tab={tab} onTabChange={setTab} />
