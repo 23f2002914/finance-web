@@ -14,7 +14,7 @@ export function DashboardTab() {
     return (
       <div className="space-y-8">
         <div className="h-10 bg-gradient-to-r from-slate-700 to-slate-800 rounded-lg shimmer w-1/3" />
-        <div className="grid-responsive">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
@@ -35,40 +35,40 @@ export function DashboardTab() {
   return (
     <div className="space-y-8 fade-in">
       <div>
-        <h1 className="section-header">💰 Financial Dashboard</h1>
-        <p className="body-sm">Track your finances at a glance</p>
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent mb-8">💰 Financial Dashboard</h1>
+        <p className="text-sm leading-relaxed text-slate-300">Track your finances at a glance</p>
       </div>
       
       {/* Summary Stats */}
-      <div className="grid-responsive">
-        <div className="stat-card stat-card-save hover:scale-105 transform transition-transform">
-          <div className="stat-label">Total Balance</div>
-          <div className="stat-value">{inr(totalBalance)}</div>
-          <div className="stat-subtext">All accounts</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 space-y-2 hover:scale-105 transform transition-transform">
+          <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Total Balance</div>
+          <div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-300 to-cyan-200 bg-clip-text text-transparent">{inr(totalBalance)}</div>
+          <div className="text-xs text-slate-500">All accounts</div>
         </div>
         
-        <div className="stat-card stat-card-income">
-          <div className="stat-label">Monthly Income</div>
-          <div className="stat-value">{inr(monthIncome)}</div>
-          <div className="stat-subtext">This month</div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Monthly Income</div>
+          <div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-200 bg-clip-text text-transparent">{inr(monthIncome)}</div>
+          <div className="text-xs text-slate-500">This month</div>
         </div>
         
-        <div className="stat-card stat-card-expense">
-          <div className="stat-label">Monthly Expenses</div>
-          <div className="stat-value">{inr(monthExpenses)}</div>
-          <div className="stat-subtext">This month</div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Monthly Expenses</div>
+          <div className="text-3xl font-bold tracking-tight bg-gradient-to-r from-orange-300 to-orange-200 bg-clip-text text-transparent">{inr(monthExpenses)}</div>
+          <div className="text-xs text-slate-500">This month</div>
         </div>
         
-        <div className={`stat-card ${monthSavings >= 0 ? 'stat-card-save' : 'stat-card-expense'}`}>
-          <div className="stat-label">Monthly Savings</div>
-          <div className="stat-value">{inr(monthSavings)}</div>
-          <div className="stat-subtext">Income - Expenses</div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-6 space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">Monthly Savings</div>
+          <div className={`text-3xl font-bold tracking-tight ${monthSavings >= 0 ? 'bg-gradient-to-r from-cyan-300 to-cyan-200' : 'bg-gradient-to-r from-red-300 to-red-200'} bg-clip-text text-transparent`}>{inr(monthSavings)}</div>
+          <div className="text-xs text-slate-500">Income - Expenses</div>
         </div>
       </div>
 
       {/* Account Breakdown */}
-      <div className="surface-lg p-8 space-y-6">
-        <h2 className="section-subheader">🏦 Account Balances</h2>
+      <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 border border-slate-700/60 rounded-2xl shadow-2xl p-8 space-y-6">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-100 mb-4">🏦 Account Balances</h2>
         <div className="space-y-3">
           {dashboard.accounts?.map((acc: any) => {
             const balance = alltime[acc.name]?.closing || 0
@@ -76,17 +76,17 @@ export function DashboardTab() {
             const icon = type === 'Bank' ? '🏦' : type === 'Wallet' ? '👝' : '💵'
             
             return (
-              <div key={acc.name} className="surface-interactive p-4 flex items-center justify-between group">
+              <div key={acc.name} className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between group cursor-pointer hover:bg-slate-800/60 hover:border-slate-600/60 transition-all duration-200">
                 <div className="flex items-center gap-4">
                   <div className="text-3xl group-hover:scale-110 transition-transform">{icon}</div>
                   <div>
                     <div className="font-semibold text-slate-50">{acc.name}</div>
-                    <div className="caption">{type}</div>
+                    <div className="text-xs text-slate-500">{type}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-lg text-cyan-300">{inr(balance)}</div>
-                  <div className="caption">Balance</div>
+                  <div className="text-xs text-slate-500">Balance</div>
                 </div>
               </div>
             )
@@ -96,23 +96,23 @@ export function DashboardTab() {
 
       {/* Subscriptions & Categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="surface-lg p-8">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 border border-slate-700/60 rounded-2xl shadow-2xl p-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-3xl">📺</span>
             <div>
-              <h3 className="section-subheader m-0">Active Subscriptions</h3>
-              <p className="caption">Monthly commitment</p>
+              <h3 className="text-2xl font-bold tracking-tight text-slate-100 mb-4 m-0">Active Subscriptions</h3>
+              <p className="text-xs text-slate-500">Monthly commitment</p>
             </div>
           </div>
           <div className="text-3xl font-bold text-purple-300">{inr(dashboard.subscription_total || 0)}</div>
         </div>
 
-        <div className="surface-lg p-8">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 border border-slate-700/60 rounded-2xl shadow-2xl p-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-3xl">📊</span>
             <div>
-              <h3 className="section-subheader m-0">Top Spending</h3>
-              <p className="caption">By category</p>
+              <h3 className="text-2xl font-bold tracking-tight text-slate-100 mb-4 m-0">Top Spending</h3>
+              <p className="text-xs text-slate-500">By category</p>
             </div>
           </div>
           <div className="space-y-2">
@@ -121,7 +121,7 @@ export function DashboardTab() {
               .slice(0, 3)
               .map(([cat, amt]: [string, any]) => (
                 <div key={cat} className="flex justify-between items-center py-2 px-3 hover:bg-slate-700/20 rounded">
-                  <span className="body-sm text-slate-300">{cat}</span>
+                  <span className="text-sm leading-relaxed text-slate-300">{cat}</span>
                   <span className="font-semibold text-orange-300">{inr(amt)}</span>
                 </div>
               ))}
