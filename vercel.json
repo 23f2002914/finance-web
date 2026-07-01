@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install && npm install -C frontend",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "regions": ["iad1"],
   "env": {
     "VITE_SUPABASE_URL": "https://biimibmtcofxsbtcauaq.supabase.co",
