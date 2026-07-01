@@ -47,3 +47,4 @@ if __name__ == '__main__':
     from backend.config import DEBUG, PORT
     app = create_app()
     app.run(debug=DEBUG, port=PORT, host='0.0.0.0')
+
