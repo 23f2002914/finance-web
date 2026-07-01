@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<header>
+  <span class="header-brand">💰 Finance</span>
+  <nav class="top-nav" id="top-nav">
+    <button data-tab="dashboard"     onclick="switchTab('dashboard')">Dashboard</button>
+    <button data-tab="accounts"      onclick="switchTab('accounts')">Accounts</button>
+    <button data-tab="transfers"     onclick="switchTab('transfers')">Transfers</button>
+    <button data-tab="debts"         onclick="switchTab('debts')">Debts</button>
+    <button data-tab="income"        onclick="switchTab('income')">Income</button>
+    <button data-tab="expenses"      onclick="switchTab('expenses')">Expenses</button>
+    <button data-tab="budgets"       onclick="switchTab('budgets')">Budgets</button>
+    <button data-tab="report"        onclick="switchTab('report')">Report</button>
+    <button data-tab="subscriptions" onclick="switchTab('subscriptions')">Subscriptions</button>
+    <button data-tab="tools"         onclick="switchTab('tools')">Tools</button>
+  </nav>
+  <div class="header-actions">
+    <button onclick="toggleDark()" id="dark-toggle" title="Toggle dark mode">🌙</button>
+    <button onclick="showShortcuts()" title="Keyboard shortcuts">⌨</button>
+    <button onclick="showExportMenu()" title="Export / Backup">⬇</button>
+  </div>
+</header>
+
+<!-- ── MOBILE BOTTOM NAV ──────────────────────────────────────────────────── -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button data-tab="dashboard"  onclick="switchTab('dashboard')"><span class="bn-icon">🏠</span>Home</button>
+  <button data-tab="income"     onclick="switchTab('income')"><span class="bn-icon">💚</span>Income</button>
+  <button data-tab="expenses"   onclick="switchTab('expenses')"><span class="bn-icon">💸</span>Expenses</button>
+  <button data-tab="report"     onclick="switchTab('report')"><span class="bn-icon">📊</span>Report</button>
+  <button data-tab="debts"      onclick="switchTab('debts')"><span class="bn-icon">💳</span>Debts</button>
+  <button data-tab="accounts"   onclick="switchTab('accounts')"><span class="bn-icon">🏦</span>Accounts</button>
+  <button data-tab="tools"      onclick="switchTab('tools')"><span class="bn-icon">🔧</span>Tools</button>
+</nav>
+
+<!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
+<main>
+
+<!-- ══ DASHBOARD ══════════════════════════════════════════════════════════════ -->
+<div id="tab-dashboard" class="tab-pane">
+  <div class="dash-header-row">
+    <p class="page-title">Dashboard</p>
+    <div class="dash-month-pick">
+      <label>Month</label>
+      <select id="dash-month-filter" onchange="renderDashboard()">
+        <option value="">All time</option>
+      </select>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="card income"><label>Total Income</label><div class="amount inr" id="d-income">—</div></div>
+    <div class="card debt"><label>Total Debt</label><div class="amount inr" id="d-debt">—</div></div>
+    <div class="card expense"><label>Total Expenses</label><div class="amount inr" id="d-exp">—</div></div>
+    <div class="card sub"><label>Monthly Subscriptions</label><div class="amount inr" id="d-sub">—</div></div>
+    <div class="card net"><label>Net Savings</label><div class="amount inr" id="d-net">—</div></div>
+  </div>
+  <div id="dash-acc-balances" class="acc-balances"></div>
+  <div id="dash-budget-strip" class="budget-strip"></div>
+  <div class="chart-grid-2">
+    <div class="chart-box"><h3>Income vs Expenses</h3><canvas id="bar-chart"></canvas></div>
+    <div class="chart-box"><h3>Expenses by Category</h3><canvas id="donut-chart"></canvas></div>
+  </div>
+  <div class="chart-box" style="margin-bottom:20px"><h3>Spending Trends</h3><canvas id="trends-chart"></canvas></div>
+  <div class="chart-box"><h3>Net Worth Over Time</h3><canvas id="networth-chart"></canvas></div>
+</div>
+
+<!-- ══ ACCOUNTS ══════════════════════════════════════════════════════════════ -->
+<div id="tab-accounts" class="tab-pane">
+  <p class="page-title">Accounts</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Bank Accounts &amp; Wallets</h2>
+      <button class="btn btn-primary" onclick="showAccountModal()">+ Add Account</button>
+    </div>
+    <div class="section-body">
+      <table class="acc-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Notes</th><th>Status</th><th>Closing Balance</th><th>Actions</th></tr></thead>
+        <tbody id="acc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <h2>Opening Balances</h2>
+      <button class="btn btn-primary" onclick="showOpeningModal()">+ Add Opening</button>
+    </div>
+    <div class="section-body">
+      <div id="openings-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRANSFERS ══════════════════════════════════════════════════════════════ -->
+<div id="tab-transfers" class="tab-pane">
+  <p class="page-title">Transfers</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Internal Transfers</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="tr-month-filter" onchange="renderTransfers(this.value)" style="width:140px;padding:5px 8px;font-size:13px">
+          <option value="">All months</option>
+        </select>
+        <button class="btn btn-primary" onclick="showTransferModal()">+ Add Transfer</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="tr-table">
+        <thead><tr><th>Date</th><th>From</th><th>To</th><th>Method</th><th>Amount</th><th>Description</th><th>Actions</th></tr></thead>
+        <tbody id="tr-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DEBTS ══════════════════════════════════════════════════════════════════ -->
+<div id="tab-debts" class="tab-pane">
+  <p class="page-title">Debts</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Monthly Debt Snapshot</h2>
+      <button class="btn btn-debt" onclick="showDebtModal()">+ Add Month</button>
+    </div>
+    <div class="section-body">
+      <table class="debt-table">
+        <thead><tr id="debt-thead-row"><th>Month</th><th>Subscriptions</th><th>Total</th><th>Actions</th></tr></thead>
+        <tbody id="debt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="chart-box" style="margin-bottom:20px"><h3>Debt History</h3><canvas id="debt-hist-chart"></canvas></div>
+  <div class="section">
+    <div class="section-header">
+      <h2>Manage Creditors</h2>
+      <button class="btn btn-primary" style="font-size:0.8rem;padding:4px 10px" onclick="showCreditorModal()">+ Add Creditor</button>
+    </div>
+    <div class="section-body" id="creditor-list-body" style="padding:12px">
+      <p style="color:var(--muted)">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOOLS ═══════════════════════════════════════════════════════════════════ -->
+<div id="tab-tools" class="tab-pane">
+  <p class="page-title">Tools</p>
+  <div class="section">
+    <div class="section-header"><h2>EMI Calculator</h2></div>
+    <div class="section-body" style="padding:20px">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Principal (₹)</label><input type="number" id="emi-p" placeholder="100000" oninput="calcEMI()"></div>
+        <div class="field"><label class="field-label">Annual Rate (%)</label><input type="number" id="emi-r" placeholder="12" step="0.1" oninput="calcEMI()"></div>
+        <div class="field"><label class="field-label">Tenure (months)</label><input type="number" id="emi-n" placeholder="12" oninput="calcEMI()"></div>
+        <div class="field"><label class="field-label">Monthly EMI</label><input type="text" id="emi-result" readonly placeholder="—" style="font-weight:700;color:var(--save-h)"></div>
+        <div class="field"><label class="field-label">Total Interest</label><input type="text" id="emi-interest" readonly placeholder="—"></div>
+        <div class="field"><label class="field-label">Total Payment</label><input type="text" id="emi-total" readonly placeholder="—"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INCOME ══════════════════════════════════════════════════════════════════ -->
+<div id="tab-income" class="tab-pane">
+  <p class="page-title">Income</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Income Entries</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="showImportModal('income')">⬆ Import CSV</button>
+        <button class="btn btn-income" onclick="showIncomeEntryModal()">+ Add Income</button>
+      </div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-row">
+        <input type="text" id="inc-search" placeholder="Search…" oninput="applyIncFilters()">
+        <select id="inc-month-filter" onchange="applyIncFilters()"><option value="">All months</option></select>
+        <select id="inc-account-filter" onchange="applyIncFilters()"><option value="">All accounts</option></select>
+        <select id="inc-cat-filter" onchange="applyIncFilters()">
+          <option value="">All categories</option>
+          <option>Rental</option><option>Refund</option><option>Salary</option>
+          <option>Freelance</option><option>Gift</option><option>Interest</option><option>Other</option>
+        </select>
+        <select id="inc-pm-filter" onchange="applyIncFilters()">
+          <option value="">All methods</option>
+          <option>UPI</option><option>Card - Debit</option><option>Card - Credit</option>
+          <option>Cash</option><option>Net Banking</option><option>Cheque</option>
+        </select>
+        <input type="date" id="inc-from-date" onchange="applyIncFilters()">
+        <input type="date" id="inc-to-date"   onchange="applyIncFilters()">
+        <input type="number" id="inc-min-amt" placeholder="Min ₹" oninput="applyIncFilters()">
+        <input type="number" id="inc-max-amt" placeholder="Max ₹" oninput="applyIncFilters()">
+        <button class="btn-icon" onclick="clearIncFilters()">✕ Clear</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="income-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Account</th><th>Method</th><th>Amount</th><th>Notes</th><th>Actions</th></tr></thead>
+        <tbody id="inc-tbody"></tbody>
+        <tfoot class="sticky-tfoot" id="inc-tfoot" style="display:none">
+          <tr><td colspan="5" style="color:var(--muted)">Page total</td><td id="inc-page-total" class="inr"></td><td colspan="2"></td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <div id="inc-pagination"></div>
+  </div>
+</div>
+
+<!-- ══ EXPENSES ════════════════════════════════════════════════════════════════ -->
+<div id="tab-expenses" class="tab-pane">
+  <p class="page-title">Expenses</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Expense Entries</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="showImportModal('expenses')">⬆ Import CSV</button>
+        <button class="btn btn-exp" onclick="showExpenseModal()">+ Add Expense</button>
+      </div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-row">
+        <input type="text" id="exp-search" placeholder="Search…" oninput="applyExpFilters()">
+        <select id="exp-month-filter" onchange="applyExpFilters()"><option value="">All months</option></select>
+        <select id="exp-account-filter" onchange="applyExpFilters()"><option value="">All accounts</option></select>
+        <select id="exp-cat-filter" onchange="applyExpFilters()">
+          <option value="">All categories</option>
+          <option>Food &amp; Dining</option><option>Transport</option><option>Shopping</option>
+          <option>Entertainment</option><option>Health &amp; Medical</option><option>Education</option>
+          <option>Utilities</option><option>Personal Care</option><option>Split</option><option>Other</option>
+        </select>
+        <select id="exp-pm-filter" onchange="applyExpFilters()">
+          <option value="">All methods</option>
+          <option>UPI</option><option>Card - Debit</option><option>Card - Credit</option>
+          <option>Cash</option><option>Net Banking</option><option>Cheque</option>
+        </select>
+        <input type="date" id="exp-from-date" onchange="applyExpFilters()">
+        <input type="date" id="exp-to-date"   onchange="applyExpFilters()">
+        <input type="number" id="exp-min-amt" placeholder="Min ₹" oninput="applyExpFilters()">
+        <input type="number" id="exp-max-amt" placeholder="Max ₹" oninput="applyExpFilters()">
+        <button class="btn-icon" onclick="clearExpFilters()">✕ Clear</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="exp-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Account</th><th>Method</th><th>Amount</th><th>Notes</th><th>Actions</th></tr></thead>
+        <tbody id="exp-tbody"></tbody>
+        <tfoot class="sticky-tfoot" id="exp-tfoot" style="display:none">
+          <tr><td colspan="5" style="color:var(--muted)">Page total</td><td id="exp-page-total" class="inr"></td><td colspan="2"></td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <div id="exp-pagination"></div>
+  </div>
+</div>
+
+<!-- ══ BUDGETS ══════════════════════════════════════════════════════════════════ -->
+<div id="tab-budgets" class="tab-pane">
+  <p class="page-title">Budgets</p>
+  <div class="section">
+    <div class="section-header">
+      <h2>Monthly Budgets</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="budget-month-filter" onchange="renderBudgets()" style="width:140px;padding:5px 8px;font-size:13px">
+          <option value="">Select month…</option>
+        </select>
+        <button class="btn btn-primary" onclick="showBudgetModal()">+ Set Budget</button>
+      </div>
+    </div>
+    <div class="section-body">
+      <table class="acc-table">
+        <thead><tr><th>Category</th><th>Monthly Limit</th><th>Spent</th><th>Remaining</th><th>Progress</th><th>Actions</th></tr></thead>
+        <tbody id="budget-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REPORT ══════════════════════════════════════════════════════════════════ -->
+<div id="tab-report" class="tab-pane">
+  <p class="page-title">Monthly Report</p>
+  <div class="report-selector">
+    <label>Month:</label>
+    <select id="report-month-sel" onchange="renderReport(this.value)">
+      <option value="">— Select —</option>
+    </select>
+    <button class="btn btn-sm btn-primary" onclick="window.print()">🖨 Print</button>
+    <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="exportCSV('expenses')">⬇ Expenses CSV</button>
+    <button class="btn btn-sm" style="background:var(--border);color:var(--text)" onclick="exportCSV('income')">⬇ Income CSV</button>
+  </div>
+  <div id="report-container"></div>
+</div>
+
+<!-- ══ SUBSCRIPTIONS ══════════════════════════════════════════════════════════ -->
+<div id="tab-subscriptions" class="tab-pane">
+  <p class="page-title">Subscriptions</p>
+  <div id="due-this-month" class="section" style="margin-bottom:20px">
+    <div class="section-header"><h2>⚠ Due This Month</h2></div>
+    <div class="section-body"><div id="due-list" class="empty">Loading…</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <h2>All Subscriptions</h2>
+      <button class="btn btn-sub" onclick="showSubModal()">+ Add Subscription</button>
+    </div>
+    <div class="section-body">
+      <table class="sub-table">
+        <thead><tr><th>Name</th><th>Amount</th><th>Cycle</th><th>Billing Day</th><th>Monthly Equiv.</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="sub-tbody"></tbody>
+        <tfoot><tr class="total-row"><td colspan="4" style="padding:9px 12px">Monthly Total</td><td id="sub-total-cell" colspan="3" style="padding:9px 12px;font-weight:700"></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══════════════════════════ MODALS ════════════════════════════════════════ -->
+
+<!-- LOGIN -->
+<div id="login-modal" class="overlay">
+  <div class="modal">
+    <div class="modal-body" style="text-align:center;padding:32px">
+      <div style="font-size:48px;margin-bottom:12px">💰</div>
+      <h4 style="font-size:18px;font-weight:700;margin-bottom:4px">Finance Tracker</h4>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Enter your password to continue</p>
+      <input type="password" id="login-password" placeholder="Password"
+             onkeydown="if(event.key==='Enter')doLogin()" style="max-width:280px;margin:0 auto">
+      <p id="login-error" style="color:var(--debt-h);font-size:12px;margin-top:8px;min-height:18px"></p>
+      <button class="btn btn-primary" style="margin-top:12px;width:120px" onclick="doLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- KEYBOARD SHORTCUTS -->
+<div id="shortcuts-modal" class="overlay" onclick="if(event.target===this)closeModal('shortcuts-modal')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><h3>⌨ Keyboard Shortcuts</h3><button class="modal-close" onclick="closeModal('shortcuts-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="shortcuts-grid">
+        <span class="shortcut-key">N</span><span class="shortcut-desc">Add new entry (active tab)</span>
+        <span class="shortcut-key">Esc</span><span class="shortcut-desc">Close modal</span>
+        <span class="shortcut-key">?</span><span class="shortcut-desc">Show this help</span>
+        <span class="shortcut-key">D</span><span class="shortcut-desc">Go to Dashboard</span>
+        <span class="shortcut-key">E</span><span class="shortcut-desc">Go to Expenses</span>
+        <span class="shortcut-key">I</span><span class="shortcut-desc">Go to Income</span>
+        <span class="shortcut-key">R</span><span class="shortcut-desc">Go to Report</span>
+        <span class="shortcut-key">T</span><span class="shortcut-desc">Go to Transfers</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MENU -->
+<div id="export-modal" class="overlay" onclick="if(event.target===this)closeModal('export-modal')">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-header"><h3>⬇ Export &amp; Backup</h3><button class="modal-close" onclick="closeModal('export-modal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Download your data.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary" onclick="window.location.href='/api/backup';closeModal('export-modal')">🗄 DB Backup (.db)</button>
+        <button class="btn" style="background:var(--save-h);color:#fff" onclick="window.location.href='/api/export/json';closeModal('export-modal')">📄 All Data (.json)</button>
+        <button class="btn" style="background:var(--exp-h);color:#fff" onclick="exportCSV('expenses');closeModal('export-modal')">📊 Expenses (.csv)</button>
+        <button class="btn" style="background:var(--inc-h);color:#fff" onclick="exportCSV('income');closeModal('export-modal')">📊 Income (.csv)</button>
+        <button class="btn" style="background:var(--sub-h);color:#fff" onclick="exportCSV('transfers');closeModal('export-modal')">📊 Transfers (.csv)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT -->
+<div id="account-modal" class="overlay" onclick="if(event.target===this)closeModal('account-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="account-modal-title">Add Account</h3><button class="modal-close" onclick="closeModal('account-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Account Name</label><input id="acc-name" placeholder="e.g. Kotak"></div>
+        <div class="field"><label class="field-label">Type</label>
+          <select id="acc-type"><option>Bank</option><option>Wallet</option><option>Cash</option></select></div>
+        <div class="field full"><label class="field-label">Notes</label><input id="acc-notes" placeholder="Optional notes"></div>
+        <div class="field"><label class="field-label">Sort Order</label><input type="number" id="acc-sort" value="99"></div>
+        <div class="field"><label class="field-label">Active</label>
+          <select id="acc-active"><option value="1">Active</option><option value="0">Inactive</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('account-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAccount()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPENING BALANCE -->
+<div id="opening-modal" class="overlay" onclick="if(event.target===this)closeModal('opening-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="opening-modal-title">Add Opening Balance</h3><button class="modal-close" onclick="closeModal('opening-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Month</label><input id="op-month" placeholder="Jul 2026"></div>
+        <div class="field"><label class="field-label">Account</label><select id="op-account"></select></div>
+        <div class="field full"><label class="field-label">Opening Balance (₹)</label><input type="number" id="op-balance" step="0.01" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('opening-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOpening()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEBT -->
+<div id="debt-modal" class="overlay" onclick="if(event.target===this)closeModal('debt-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="debt-modal-title">Add Debt</h3><button class="modal-close" onclick="closeModal('debt-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label class="field-label">Month</label><input id="debt-month" placeholder="Jul 2026"></div>
+        <div id="debt-creditor-inputs" style="display:contents"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('debt-modal')">Cancel</button>
+      <button class="btn btn-debt" onclick="saveDebt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDITOR -->
+<div id="creditor-modal" class="overlay" onclick="if(event.target===this)closeModal('creditor-modal')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><h3 id="creditor-modal-title">Add Creditor</h3><button class="modal-close" onclick="closeModal('creditor-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="creditor-id">
+      <div class="form-grid">
+        <div class="field full"><label class="field-label">Creditor Name</label><input id="creditor-name" placeholder="e.g. Bank Loan"></div>
+        <div class="field"><label class="field-label">Sort Order</label><input type="number" id="creditor-sort" value="99"></div>
+        <div class="field"><label class="field-label">Active</label>
+          <select id="creditor-active"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('creditor-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCreditor()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- INCOME ENTRY -->
+<div id="income-modal" class="overlay" onclick="if(event.target===this)closeModal('income-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="income-modal-title">Add Income</h3><button class="modal-close" onclick="closeModal('income-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Date</label><input type="date" id="inc-date"></div>
+        <div class="field"><label class="field-label">Amount (₹)</label><input type="number" id="inc-amount" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label class="field-label">Category</label>
+          <select id="inc-cat">
+            <option>Rental</option><option>Refund</option><option>Salary</option>
+            <option>Freelance</option><option>Gift</option><option>Interest</option><option>Other</option>
+          </select></div>
+        <div class="field"><label class="field-label">Account</label><select id="inc-account"></select></div>
+        <div class="field"><label class="field-label">Payment Method</label>
+          <select id="inc-pm">
+            <option>UPI</option><option>Card - Debit</option><option>Card - Credit</option>
+            <option>Cash</option><option>Net Banking</option><option>Cheque</option>
+          </select></div>
+        <div class="field"><label class="field-label">Description</label><input id="inc-desc" placeholder="Optional description"></div>
+        <div class="field full"><label class="field-label">Notes</label><textarea id="inc-notes"></textarea></div>
+        <div class="field full" style="flex-direction:row;align-items:center;gap:10px">
+          <input type="checkbox" id="inc-recurring" style="width:auto">
+          <label for="inc-recurring" style="font-size:13px;font-weight:600">Recurring income</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('income-modal')">Cancel</button>
+      <button class="btn btn-income" onclick="saveIncomeEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div id="expense-modal" class="overlay" onclick="if(event.target===this)closeModal('expense-modal')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><h3 id="expense-modal-title">Add Expense</h3><button class="modal-close" onclick="closeModal('expense-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Date</label><input type="date" id="exp-date"></div>
+        <div class="field"><label class="field-label">Amount (₹)</label><input type="number" id="exp-amount" step="0.01" placeholder="0.00" oninput="checkSplitTotal()"></div>
+        <div class="field"><label class="field-label">Category</label>
+          <select id="exp-cat">
+            <option>Food &amp; Dining</option><option>Transport</option><option>Shopping</option>
+            <option>Entertainment</option><option>Health &amp; Medical</option><option>Education</option>
+            <option>Utilities</option><option>Personal Care</option><option>Other</option>
+          </select></div>
+        <div class="field"><label class="field-label">Account</label><select id="exp-account"></select></div>
+        <div class="field"><label class="field-label">Payment Method</label>
+          <select id="exp-pm">
+            <option>UPI</option><option>Card - Debit</option><option>Card - Credit</option>
+            <option>Cash</option><option>Net Banking</option><option>Cheque</option>
+          </select></div>
+        <div class="field"><label class="field-label">Description</label><input id="exp-desc" placeholder="Optional description"></div>
+        <div class="field full"><label class="field-label">Notes</label><textarea id="exp-notes"></textarea></div>
+        <div class="field full" style="flex-direction:row;align-items:center;gap:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer">
+            <input type="checkbox" id="exp-recurring" style="width:auto"> Recurring
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer">
+            <input type="checkbox" id="exp-split-toggle" onchange="toggleSplit()" style="width:auto"> Split across categories
+          </label>
+        </div>
+      </div>
+      <div id="split-section" style="display:none;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label class="field-label">Split Breakdown</label>
+          <button class="btn-icon" onclick="addSplitRow()">+ Add Row</button>
+        </div>
+        <div id="split-rows"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between">
+          <span>Allocated: <strong id="split-allocated">₹0</strong></span>
+          <span>Remaining: <strong id="split-remaining">₹0</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('expense-modal')">Cancel</button>
+      <button class="btn btn-exp" onclick="saveExpense()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET -->
+<div id="budget-modal" class="overlay" onclick="if(event.target===this)closeModal('budget-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="budget-modal-title">Set Budget</h3><button class="modal-close" onclick="closeModal('budget-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid cols-1">
+        <div class="field"><label class="field-label">Category</label>
+          <select id="budget-cat">
+            <option>Food &amp; Dining</option><option>Transport</option><option>Shopping</option>
+            <option>Entertainment</option><option>Health &amp; Medical</option><option>Education</option>
+            <option>Utilities</option><option>Personal Care</option><option>Other</option>
+          </select></div>
+        <div class="field"><label class="field-label">Monthly Limit (₹)</label><input type="number" id="budget-limit" step="0.01" placeholder="0.00"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('budget-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBudget()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION -->
+<div id="sub-modal" class="overlay" onclick="if(event.target===this)closeModal('sub-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="sub-modal-title">Add Subscription</h3><button class="modal-close" onclick="closeModal('sub-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label class="field-label">Name</label><input id="sub-name" placeholder="e.g. Netflix"></div>
+        <div class="field"><label class="field-label">Amount (₹)</label><input type="number" id="sub-amount" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label class="field-label">Billing Cycle</label>
+          <select id="sub-cycle"><option value="monthly">Monthly</option><option value="annual">Annual</option></select></div>
+        <div class="field"><label class="field-label">Billing Day</label><input type="number" id="sub-bday" value="1" min="1" max="31"></div>
+        <div class="field"><label class="field-label">Status</label>
+          <select id="sub-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+        <div class="field full"><label class="field-label">Description</label><input id="sub-desc" placeholder="Optional description"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('sub-modal')">Cancel</button>
+      <button class="btn btn-sub" onclick="saveSub()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER -->
+<div id="transfer-modal" class="overlay" onclick="if(event.target===this)closeModal('transfer-modal')">
+  <div class="modal">
+    <div class="modal-header"><h3 id="transfer-modal-title">Add Transfer</h3><button class="modal-close" onclick="closeModal('transfer-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label class="field-label">Date</label><input type="date" id="tr-date"></div>
+        <div class="field"><label class="field-label">Amount (₹)</label><input type="number" id="tr-amount" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label class="field-label">From Account</label><select id="tr-from"></select></div>
+        <div class="field"><label class="field-label">To Account</label><select id="tr-to"></select></div>
+        <div class="field"><label class="field-label">Method</label>
+          <select id="tr-pm">
+            <option>IMPS</option><option>NEFT</option><option>UPI</option><option>Cash</option><option>Other</option>
+          </select></div>
+        <div class="field"><label class="field-label">Description</label><input id="tr-desc" placeholder="Optional"></div>
+        <div class="field full"><label class="field-label">Notes</label><textarea id="tr-notes"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('transfer-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransfer()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT -->
+<div id="import-modal" class="overlay" onclick="if(event.target===this)closeModal('import-modal')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header"><h3 id="import-modal-title">Import CSV</h3><button class="modal-close" onclick="closeModal('import-modal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Required: <code>date, amount</code>. Optional: <code>description, category, account, payment_method, notes</code><br>
+        Date format: <code>YYYY-MM-DD</code>. First row must be the header.
+      </p>
+      <div class="field" style="margin-bottom:10px">
+        <label class="field-label">Upload File</label>
+        <input type="file" id="import-file" accept=".csv" onchange="loadImportFile()">
+      </div>
+      <div class="field">
+        <label class="field-label">Or Paste CSV</label>
+        <textarea id="import-csv" rows="8" placeholder="date,description,amount,category&#10;2026-07-01,Grocery,450,Food &amp; Dining"></textarea>
+      </div>
+      <div id="import-preview" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeModal('import-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="previewImport()">Preview</button>
+      <button class="btn btn-income" id="import-confirm-btn" style="display:none" onclick="confirmImport()">Import All</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

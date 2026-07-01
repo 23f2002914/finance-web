@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.env
+*.db
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
