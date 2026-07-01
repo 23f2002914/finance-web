@@ -27,13 +27,12 @@ def list_income():
         if account:
             query = query.eq('account', account)
 
-        # Get paginated results with count
-        income = query.order('date', desc=True).range(offset, offset + limit - 1).execute(count='exact')
-        total = income.count if hasattr(income, 'count') else len(income.data)
+        # Get paginated results
+        income = query.order('date', desc=True).range(offset, offset + limit - 1).execute()
 
         return jsonify({
             'data': income.data,
-            'total': total,
+            'total': len(income.data),
             'limit': limit,
             'offset': offset,
         })

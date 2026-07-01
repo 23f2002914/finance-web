@@ -27,9 +27,8 @@ def list_expenses():
         if account:
             query = query.eq('account', account)
 
-        # Get paginated results with count
-        expenses = query.order('date', desc=True).range(offset, offset + limit - 1).execute(count='exact')
-        total = expenses.count if hasattr(expenses, 'count') else len(expenses.data)
+        # Get paginated results
+        expenses = query.order('date', desc=True).range(offset, offset + limit - 1).execute()
 
         # Attach splits for split expenses
         for exp in expenses.data:
@@ -41,7 +40,7 @@ def list_expenses():
 
         return jsonify({
             'data': expenses.data,
-            'total': total,
+            'total': len(expenses.data),
             'limit': limit,
             'offset': offset,
         })
