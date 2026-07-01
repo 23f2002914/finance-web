@@ -4,10 +4,11 @@ import { inr } from '../../lib/formatters'
 import { Skeleton } from '../components/Skeleton'
 
 export function DashboardTab() {
-  const { data: dashboard, isLoading } = useQuery({
+  const { data: dashboard, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api('/dashboard'),
     staleTime: 1000 * 60 * 5,
+    retry: 3,
   })
 
   if (isLoading) {
@@ -18,6 +19,20 @@ export function DashboardTab() {
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 fade-in">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-red-300 mb-2">⚠️ Failed to Load Dashboard</h3>
+          <p className="text-red-200 text-sm mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          <div className="text-xs text-red-300 bg-red-500/5 p-3 rounded font-mono">
+            {import.meta.env.VITE_API_URL ? `API: ${import.meta.env.VITE_API_URL}` : 'API URL not configured'}
+          </div>
         </div>
       </div>
     )
