@@ -186,3 +186,115 @@ export async function payDebt(id: number, totalAmount: number, newPaidTotal: num
     .eq('id', id)
   if (error) throw error
 }
+
+// ---------- Month helper for writes ----------
+export function dateToMonth(dateStr: string): string {
+  // dateStr = 'YYYY-MM-DD'
+  const [y, m] = dateStr.split('-')
+  return `${MONTHS[parseInt(m, 10) - 1]} ${y}`
+}
+
+// ---------- Expenses CRUD ----------
+export async function createExpense(v: any) {
+  const { error } = await supabase.from('expenses').insert({
+    date: v.date, description: v.description || '', category: v.category || 'Other',
+    account: v.account, payment_method: v.payment_method || 'UPI', amount: Number(v.amount),
+    month: dateToMonth(v.date), notes: v.notes || '', is_recurring: false, is_split: false, deleted: false,
+  })
+  if (error) throw error
+}
+export async function updateExpense(id: number, v: any) {
+  const patch: any = { description: v.description || '', category: v.category || 'Other',
+    account: v.account, payment_method: v.payment_method || 'UPI', amount: Number(v.amount), notes: v.notes || '' }
+  if (v.date) { patch.date = v.date; patch.month = dateToMonth(v.date) }
+  const { error } = await supabase.from('expenses').update(patch).eq('id', id)
+  if (error) throw error
+}
+export async function deleteExpense(id: number) {
+  const { error } = await supabase.from('expenses').update({ deleted: true }).eq('id', id)
+  if (error) throw error
+}
+
+// ---------- Income CRUD ----------
+export async function createIncome(v: any) {
+  const { error } = await supabase.from('income_entries').insert({
+    date: v.date, description: v.description || '', category: v.category || 'Other',
+    account: v.account, payment_method: v.payment_method || 'UPI', amount: Number(v.amount),
+    month: dateToMonth(v.date), notes: v.notes || '', is_recurring: false, deleted: false,
+  })
+  if (error) throw error
+}
+export async function updateIncome(id: number, v: any) {
+  const patch: any = { description: v.description || '', category: v.category || 'Other',
+    account: v.account, payment_method: v.payment_method || 'UPI', amount: Number(v.amount), notes: v.notes || '' }
+  if (v.date) { patch.date = v.date; patch.month = dateToMonth(v.date) }
+  const { error } = await supabase.from('income_entries').update(patch).eq('id', id)
+  if (error) throw error
+}
+export async function deleteIncome(id: number) {
+  const { error } = await supabase.from('income_entries').update({ deleted: true }).eq('id', id)
+  if (error) throw error
+}
+
+// ---------- Transfers CRUD ----------
+export async function createTransfer(v: any) {
+  const { error } = await supabase.from('transfers').insert({
+    date: v.date, from_account: v.from_account, to_account: v.to_account, amount: Number(v.amount),
+    payment_method: v.payment_method || 'IMPS', description: v.description || '', notes: v.notes || '',
+    month: dateToMonth(v.date), deleted: false,
+  })
+  if (error) throw error
+}
+export async function updateTransfer(id: number, v: any) {
+  const patch: any = { from_account: v.from_account, to_account: v.to_account, amount: Number(v.amount),
+    payment_method: v.payment_method || 'IMPS', description: v.description || '', notes: v.notes || '' }
+  if (v.date) { patch.date = v.date; patch.month = dateToMonth(v.date) }
+  const { error } = await supabase.from('transfers').update(patch).eq('id', id)
+  if (error) throw error
+}
+export async function deleteTransfer(id: number) {
+  const { error } = await supabase.from('transfers').update({ deleted: true }).eq('id', id)
+  if (error) throw error
+}
+
+// ---------- Subscriptions CRUD ----------
+export async function createSubscription(v: any) {
+  const { error } = await supabase.from('subscriptions').insert({
+    name: v.name, amount: Number(v.amount), description: v.description || '',
+    status: v.status || 'active', billing_day: Number(v.billing_day) || 1,
+    billing_cycle: v.billing_cycle || 'monthly', deleted: false,
+  })
+  if (error) throw error
+}
+export async function updateSubscription(id: number, v: any) {
+  const { error } = await supabase.from('subscriptions').update({
+    name: v.name, amount: Number(v.amount), description: v.description || '',
+    status: v.status || 'active', billing_day: Number(v.billing_day) || 1,
+    billing_cycle: v.billing_cycle || 'monthly',
+  }).eq('id', id)
+  if (error) throw error
+}
+export async function deleteSubscription(id: number) {
+  const { error } = await supabase.from('subscriptions').update({ deleted: true }).eq('id', id)
+  if (error) throw error
+}
+
+// ---------- Accounts CRUD ----------
+export async function createAccount(v: any) {
+  const { error } = await supabase.from('bank_accounts').insert({
+    name: v.name, account_type: v.account_type || 'Bank', notes: v.notes || '',
+    sort_order: Number(v.sort_order) || 99, active: v.active !== false,
+  })
+  if (error) throw error
+}
+export async function updateAccount(id: number, v: any) {
+  const { error } = await supabase.from('bank_accounts').update({
+    name: v.name, account_type: v.account_type || 'Bank', notes: v.notes || '',
+    sort_order: Number(v.sort_order) || 99, active: v.active !== false,
+  }).eq('id', id)
+  if (error) throw error
+}
+export async function deleteAccount(id: number) {
+  const { error } = await supabase.from('bank_accounts').delete().eq('id', id)
+  if (error) throw error
+}
