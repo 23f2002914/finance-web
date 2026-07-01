@@ -146,7 +146,12 @@ def update_expense(id):
         # Handle splits if provided
         if 'splits' in data:
             if data['splits']:
-                validate_split_total(data['splits'], payload.get('amount', data.get('amount')))
+                # Get the amount to validate against (from update or existing)
+                amount_to_validate = payload.get('amount')
+                if amount_to_validate is None:
+                    existing = supabase.table('expenses').select('amount').eq('id', id).execute()
+                    amount_to_validate = float(existing.data[0]['amount']) if existing.data else None
+                validate_split_total(data['splits'], amount_to_validate)
                 # Delete old splits and create new ones
                 supabase.table('expense_splits').delete().eq('expense_id', id).execute()
                 split_payloads = [

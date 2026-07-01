@@ -91,9 +91,9 @@ def update_account(id):
             return jsonify({'error': 'Account not found'}), 404
 
         old_name = current.data[0]['name']
-        new_name = data.get('name', '').strip()
+        new_name = data.get('name', '').strip() if 'name' in data else None
 
-        if new_name and not new_name:
+        if 'name' in data and not new_name:
             return jsonify({'error': 'Account name cannot be empty'}), 400
 
         payload = {}

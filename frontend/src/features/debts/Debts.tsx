@@ -51,7 +51,7 @@ export function DebtsTab() {
                     <div>
                       <div className="font-medium">{cred.name}</div>
                       <div className="text-sm">
-                        Owed: {inr(entry.amount)} | Paid: {inr(entry.amount_paid)} | Remaining: {inr(entry.amount_remaining)}
+                        Owed: {inr(entry.amount)} | Paid: {inr(entry.amount_paid)} | Remaining: {inr(entry.amount - entry.amount_paid)}
                       </div>
                       <div className={`text-sm font-semibold ${statusColor}`}>{entry.status.toUpperCase()}</div>
                     </div>
@@ -83,7 +83,7 @@ export function DebtsTab() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-slate-900 rounded-lg p-6 max-w-sm">
             <h2 className="font-bold mb-4">Record Payment</h2>
-            <p className="mb-4">Owed: {inr(paymentDialog.amount)} | Remaining: {inr(paymentDialog.amount_remaining)}</p>
+            <p className="mb-4">Owed: {inr(paymentDialog.amount)} | Remaining: {inr(paymentDialog.amount - paymentDialog.amount_paid)}</p>
             <div className="space-y-3">
               <button
                 onClick={() => {

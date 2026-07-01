@@ -24,5 +24,5 @@ export function useRealtimeSubscription(
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [table, filter])
+  }, [table, filter, onChanges])
 }
