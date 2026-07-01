@@ -23,19 +23,19 @@ html { scroll-behavior: smooth; }
   }
 
   .badge {
-    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-opacity-20;
+    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm;
   }
 
   .badge-unpaid {
-    @apply bg-red-500/20 text-red-200 border-red-500;
+    @apply bg-red-500/20 text-red-200 border border-red-500/50;
   }
 
   .badge-partial {
-    @apply bg-amber-500/20 text-amber-200 border-amber-500;
+    @apply bg-amber-500/20 text-amber-200 border border-amber-500/50;
   }
 
   .badge-paid {
-    @apply bg-emerald-500/20 text-emerald-200 border-emerald-500;
+    @apply bg-emerald-500/20 text-emerald-200 border border-emerald-500/50;
   }
 
   .btn-primary {
